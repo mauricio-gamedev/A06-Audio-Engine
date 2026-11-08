@@ -2,8 +2,8 @@ package io.github.astromg01.a06audioengine
 
 import android.content.Context
 import android.media.AudioDeviceInfo
-import android.media.AudioEffect
 import android.media.AudioManager
+import android.media.audiofx.AudioEffect
 import android.os.Build
 
 object DeviceDiagnostics {

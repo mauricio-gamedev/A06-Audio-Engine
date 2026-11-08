@@ -16,7 +16,6 @@ internal class Biquad {
     private var z2 = 0.0
 
     fun configurePeaking(sampleRate: Int, frequencyHz: Float, q: Float, gainDb: Float) {
-        reset()
         if (sampleRate <= 0 || frequencyHz <= 0f || frequencyHz >= sampleRate / 2f || q <= 0f ||
             gainDb == 0f
         ) {
@@ -24,6 +23,7 @@ internal class Biquad {
             return
         }
 
+        // Keep delay state while coefficients change so profile changes are less abrupt.
         val omega = 2.0 * PI * frequencyHz / sampleRate
         val alpha = sin(omega) / (2.0 * q)
         val amplitude = 10.0.pow(gainDb / 40.0)

@@ -18,6 +18,8 @@ class A06RenderersFactory(
         enableAudioOutputPlaybackParams: Boolean
     ): AudioSink {
         return DefaultAudioSink.Builder(context)
+            .setEnableFloatOutput(enableFloatOutput)
+            .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
             .setAudioProcessors(arrayOf(dspProcessor))
             .build()
     }

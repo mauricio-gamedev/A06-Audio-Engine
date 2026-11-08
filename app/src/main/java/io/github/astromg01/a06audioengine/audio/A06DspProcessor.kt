@@ -105,19 +105,22 @@ class A06DspProcessor : BaseAudioProcessor() {
     }
 
     private fun ensureState(format: AudioProcessor.AudioFormat, snapshot: Settings) {
-        if (activeRevision == snapshot.revision &&
-            activeSampleRate == format.sampleRate &&
-            activeChannels == format.channelCount
-        ) return
+        val formatChanged = activeSampleRate != format.sampleRate ||
+            activeChannels != format.channelCount ||
+            filters.isEmpty()
 
-        activeRevision = snapshot.revision
-        activeSampleRate = format.sampleRate
-        activeChannels = format.channelCount
+        if (formatChanged) {
+            activeSampleRate = format.sampleRate
+            activeChannels = format.channelCount
+            filters = Array(format.channelCount) { Array(AudioProfile.BAND_FREQUENCIES_HZ.size) { Biquad() } }
+            compressors = Array(format.channelCount) { ChannelCompressor(format.sampleRate) }
+            limiters = Array(format.channelCount) { PeakLimiter(format.sampleRate) }
+        }
 
-        filters = Array(format.channelCount) {
-            Array(AudioProfile.BAND_FREQUENCIES_HZ.size) { band ->
-                Biquad().apply {
-                    configurePeaking(
+        if (formatChanged || activeRevision != snapshot.revision) {
+            for (channel in 0 until format.channelCount) {
+                for (band in AudioProfile.BAND_FREQUENCIES_HZ.indices) {
+                    filters[channel][band].configurePeaking(
                         format.sampleRate,
                         AudioProfile.BAND_FREQUENCIES_HZ[band],
                         AudioProfile.BAND_Q[band],
@@ -129,8 +132,7 @@ class A06DspProcessor : BaseAudioProcessor() {
                     )
                 }
             }
+            activeRevision = snapshot.revision
         }
-        compressors = Array(format.channelCount) { ChannelCompressor(format.sampleRate) }
-        limiters = Array(format.channelCount) { PeakLimiter(format.sampleRate) }
     }
 }
